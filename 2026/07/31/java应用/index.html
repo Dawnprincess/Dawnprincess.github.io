@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/2026/07/31/java%E5%BA%94%E7%94%A8/java%E7%AC%94%E8%AE%B0/%E5%BC%82%E5%B8%B8%E4%BD%93%E7%B3%BB%E5%9B%BE.png">
 <meta property="article:published_time" content="2026-07-30T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-18T02:08:42.828Z">
+<meta property="article:modified_time" content="2026-08-20T11:18:56.022Z">
 <meta property="article:author" content="Dawn">
 <meta property="article:tag" content="java">
 <meta name="twitter:card" content="summary_large_image">
@@ -304,7 +304,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          21k 字
+          22k 字
         
       </span>
     
@@ -315,7 +315,7 @@
         
         
         
-          177 分钟
+          186 分钟
         
       </span>
     
@@ -499,6 +499,12 @@
 <p>2.标准输入输出流（处理流装饰器的应用）<br>System中定义了三个流，in、out、err，在JVM启动时初始化完成，可以直接使用。<br>本质是包装好的装饰器链。<br>out为PrintStream，由OutputStreamWriter添加Buffered包装而成。<br>FileDescriptor.out是一个特殊的文件描述符，表示标准输出（即linux的1号文件描述符）。<br>in和err与以上相似。</p>
 <p>文件描述符	名字	Java映射	默认去向<br>0	stdin（标准输入）	System.in	键盘<br>1	stdout（标准输出）	System.out	控制台<br>2	stderr（标准错误）	System.err	控制台（但与stdout分开）</p>
 <p>可以通过setOut来重定向输出</p>
+<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><p>理解socket这个概念<br>简单讲是Ip+端口的组合。实际上将复杂的网络通信（屏蔽掉协议等）抽象为简单的函数调用，并且借鉴了Unix类系统”一切皆文件”的设计理念。在java中也延续了这一理念，socket将网络数据抽象为和文件一样的“流”，可以像操作文件一样操作网络数据。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ServerSocket</span> <span class="hljs-variable">ss</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServerSocket</span>(<span class="hljs-number">8888</span>);<br><span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> ss.accept();<br><span class="hljs-type">InputStream</span> <span class="hljs-variable">is</span> <span class="hljs-operator">=</span> socket.getInputStream()<br></code></pre></td></tr></table></figure>
+<p>当ServerSocket收到客户端的连接后，就会返回一个socket.</p>
+<p>netstat指令<br>1.netstat -an 查看当前主机网络状况，包括端口监听和网络连接情况<br>2.netstat -an | more 可以分页显示<br>3.netstat -ano | findstr 8888 显示某个端口情况<br>只启用服务端，会显示如下<br>  TCP    0.0.0.0:8888           0.0.0.0:0              LISTENING       5412<br>  TCP    [::]:8888              [::]:0                 LISTENING       5412<br>0.0.0.0 是一个特殊的通配符地址，表示 “本机的所有网络接口”。（包括本机回环地址127.0.0.1，局域网ip192.168.1.100，其他网卡或VPN分配IP10.0.0.5甚至ipv6）<br>客户端连接后，状态变为ESTABLISHED<br>TCP    0.0.0.0:8888          0.0.0.0:0              LISTENING       12345<br>TCP    127.0.0.1:8888        127.0.0.1:54321        ESTABLISHED     12345<br>TCP    127.0.0.1:54321       127.0.0.1:8888         ESTABLISHED     67890</p>
+<p>客户端调用shutdownOutput()<br>TCP    127.0.0.1:8888        127.0.0.1:54321        CLOSE_WAIT      12345<br>TCP    127.0.0.1:54321       127.0.0.1:8888         FIN_WAIT_2      67890<br>客户端关闭输出流，等待服务端的FIN最终关闭，服务端等待本地应用关闭SOCKET</p>
+<p>然后服务端发送完毕后，调用close，客户端接收完毕也调用close；<br>TCP    127.0.0.1:54321       127.0.0.1:8888         TIME_WAIT       67890<br>会看到客户端端口在等2MSL，防止旧连接延迟数据干扰新连接。</p>
 
                 
               </div>
